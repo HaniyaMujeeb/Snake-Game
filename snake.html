@@ -1,0 +1,1879 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Snake Rush — Arcade Edition</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@400;600;700;800&display=swap');
+
+:root {
+  --bg:#080b16;
+  --panel:#11182a;
+  --panel2:#182239;
+  --cyan:#51f6ff;
+  --purple:#b56cff;
+  --pink:#ff58bb;
+  --green:#7bff85;
+  --text:#f1f5ff;
+  --muted:#8995b2;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse at 50% 0%,#1a1740 0%,transparent 45%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+button{font-family:inherit;cursor:pointer}
+button:active{transform:scale(.97)}
+
+.app{
+  max-width:1200px;
+  margin:auto;
+  padding:22px;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:20px;
+  flex-wrap:wrap;
+}
+
+.logo{
+  font-family:Orbitron,sans-serif;
+  font-size:27px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+.logo span{color:var(--cyan);text-shadow:0 0 15px #51f6ff66}
+
+.top-actions{display:flex;gap:9px;flex-wrap:wrap}
+
+.btn{
+  border:1px solid #ffffff16;
+  color:white;
+  background:var(--panel2);
+  border-radius:12px;
+  padding:11px 15px;
+  font-weight:700;
+  transition:.2s;
+}
+.btn:hover{border-color:var(--cyan);background:#24314b}
+.btn.primary{
+  background:linear-gradient(120deg,#3ce7ee,#8581ff);
+  color:#07101c;
+  border:0;
+  font-weight:900;
+}
+.btn.pink{background:linear-gradient(120deg,#ff57b7,#9f5bff);border:0}
+.btn.small{padding:8px 11px;font-size:12px}
+.btn.danger{background:#451e34;border-color:#ff4d8a}
+
+.layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 285px;
+  gap:18px;
+  align-items:start;
+}
+
+.main-panel,.side-panel{
+  background:linear-gradient(180deg,#11182a,#0d1322);
+  border:1px solid #ffffff12;
+  border-radius:22px;
+  padding:16px;
+  box-shadow:0 20px 70px #0004;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px;
+  margin-bottom:13px;
+}
+
+.stat{
+  background:#171f33;
+  padding:10px;
+  border-radius:13px;
+  text-align:center;
+  border:1px solid #ffffff08;
+}
+.stat-label{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:1.2px;
+  color:var(--muted);
+}
+.stat-value{
+  font-family:Orbitron,sans-serif;
+  font-weight:700;
+  font-size:19px;
+  margin-top:5px;
+}
+
+.canvas-wrap{
+  position:relative;
+  width:100%;
+  max-width:640px;
+  margin:auto;
+  aspect-ratio:1;
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid #51f6ff33;
+  box-shadow:0 0 35px #51f6ff0c;
+  background:#080d19;
+}
+
+canvas{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.overlay{
+  position:absolute;
+  inset:0;
+  background:#060913dc;
+  backdrop-filter:blur(8px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:5;
+}
+.overlay.hidden{display:none}
+
+.overlay-card{
+  width:min(100%,420px);
+  background:linear-gradient(180deg,#19233a,#101728);
+  border:1px solid #ffffff18;
+  border-radius:23px;
+  padding:25px;
+  text-align:center;
+  box-shadow:0 20px 80px #0008;
+}
+
+.overlay-title{
+  font-family:Orbitron,sans-serif;
+  font-size:27px;
+  font-weight:900;
+  margin-bottom:9px;
+}
+.overlay-sub{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.6;
+  margin-bottom:20px;
+}
+
+.mode-buttons{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:16px 0;
+}
+.mode{
+  background:#202a42;
+  color:#bfc9e1;
+  border:1px solid #ffffff10;
+  border-radius:12px;
+  padding:12px 5px;
+  font-size:11px;
+  font-weight:800;
+}
+.mode.active{
+  background:#173749;
+  border-color:var(--cyan);
+  color:var(--cyan);
+}
+
+.overlay-buttons{
+  display:grid;
+  gap:9px;
+}
+.overlay-buttons .btn{width:100%;padding:13px}
+
+.canvas-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+.hint{font-size:11px;color:var(--muted)}
+
+.sidebar-section{
+  margin-bottom:17px;
+}
+.section-title{
+  font-family:Orbitron,sans-serif;
+  font-size:13px;
+  letter-spacing:1px;
+  margin-bottom:11px;
+}
+.info-card{
+  background:#171f33;
+  border:1px solid #ffffff08;
+  border-radius:14px;
+  padding:13px;
+  margin-bottom:9px;
+}
+.info-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:12px;
+  margin-bottom:8px;
+}
+.info-row:last-child{margin-bottom:0}
+.muted{color:var(--muted)}
+.cyan{color:var(--cyan)}
+.purple{color:var(--purple)}
+.gold{color:#ffd76a}
+
+.progress-bar{
+  height:7px;
+  border-radius:10px;
+  background:#29324a;
+  overflow:hidden;
+  margin-top:8px;
+}
+.progress-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+  transition:width .25s;
+  border-radius:10px;
+}
+
+.power-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+}
+.power{
+  background:#171f33;
+  border-radius:12px;
+  padding:10px 5px;
+  text-align:center;
+  min-height:72px;
+}
+.power-icon{font-size:22px}
+.power-name{font-size:9px;color:var(--muted);margin-top:4px}
+.power.active{outline:1px solid var(--cyan);box-shadow:0 0 12px #51f6ff15}
+
+.mission{
+  background:#171f33;
+  padding:11px;
+  border-radius:12px;
+  margin-bottom:8px;
+}
+.mission-title{font-size:11px;font-weight:800}
+.mission-desc{font-size:10px;color:var(--muted);margin:5px 0}
+.mission-bottom{display:flex;justify-content:space-between;font-size:10px}
+.mission.done{border:1px solid #7bff8540}
+.mission.done .mission-title{color:var(--green)}
+
+.skin-preview{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+.skin-dot{
+  width:29px;
+  height:29px;
+  border-radius:50%;
+  border:2px solid #ffffff25;
+  cursor:pointer;
+}
+.skin-dot.selected{outline:2px solid white;outline-offset:2px}
+
+.mobile-controls{
+  display:none;
+  grid-template-columns:repeat(3,58px);
+  grid-template-rows:repeat(2,50px);
+  justify-content:center;
+  gap:6px;
+  margin-top:15px;
+}
+.control{
+  border:1px solid #ffffff15;
+  background:#1a253b;
+  color:white;
+  border-radius:12px;
+  font-size:22px;
+  touch-action:none;
+}
+.control.up{grid-column:2}
+.control.left{grid-column:1;grid-row:2}
+.control.down{grid-column:2;grid-row:2}
+.control.right{grid-column:3;grid-row:2}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#050711df;
+  backdrop-filter:blur(8px);
+  z-index:30;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:15px;
+}
+.modal.hidden{display:none}
+.modal-box{
+  width:min(700px,100%);
+  max-height:85vh;
+  overflow:auto;
+  background:#11192b;
+  border:1px solid #ffffff15;
+  border-radius:22px;
+  padding:20px;
+}
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+.modal-header h2{font-family:Orbitron,sans-serif;font-size:19px}
+.shop-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.shop-item{
+  background:#1b253a;
+  border-radius:15px;
+  padding:13px;
+  text-align:center;
+  border:1px solid #ffffff0d;
+}
+.shop-preview{
+  height:70px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:35px;
+}
+.shop-name{font-size:12px;font-weight:800}
+.shop-price{font-size:11px;color:var(--gold);margin:6px}
+.shop-item button{width:100%;font-size:11px}
+
+.toast{
+  position:fixed;
+  bottom:25px;
+  left:50%;
+  transform:translate(-50%,20px);
+  background:#192640;
+  border:1px solid #51f6ff55;
+  color:white;
+  border-radius:14px;
+  padding:13px 20px;
+  z-index:50;
+  opacity:0;
+  pointer-events:none;
+  transition:.3s;
+  font-weight:800;
+  font-size:13px;
+  box-shadow:0 10px 40px #0006;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+.settings-grid{
+  display:grid;
+  gap:13px;
+}
+.setting-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  background:#1b253a;
+  padding:13px;
+  border-radius:12px;
+  font-size:13px;
+}
+select{
+  background:#25314a;
+  color:white;
+  border:1px solid #ffffff20;
+  padding:8px;
+  border-radius:8px;
+}
+
+@media(max-width:850px){
+  .layout{grid-template-columns:1fr}
+  .side-panel{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .sidebar-section{margin-bottom:5px}
+}
+@media(max-width:550px){
+  .app{padding:10px}
+  .main-panel,.side-panel{padding:10px;border-radius:16px}
+  .logo{font-size:21px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat-value{font-size:17px}
+  .side-panel{display:block}
+  .mobile-controls{display:grid}
+  .hint{display:none}
+  .shop-grid{grid-template-columns:repeat(2,1fr)}
+  .topbar{margin-bottom:10px}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header class="topbar">
+  <div class="logo">🐍 SNAKE <span>RUSH</span></div>
+  <div class="top-actions">
+    <button class="btn small" id="shopBtn">🛒 Shop</button>
+    <button class="btn small" id="missionsBtn">🎯 Missions</button>
+    <button class="btn small" id="settingsBtn">⚙️</button>
+    <button class="btn small" id="soundBtn">🔊</button>
+  </div>
+</header>
+
+<div class="layout">
+  <main class="main-panel">
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Score</div>
+        <div class="stat-value cyan" id="score">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Level</div>
+        <div class="stat-value purple" id="level">1</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Coins</div>
+        <div class="stat-value gold" id="coins">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Best</div>
+        <div class="stat-value" id="best">0</div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="game" width="600" height="600"></canvas>
+
+      <!-- Main menu -->
+      <div class="overlay" id="menuOverlay">
+        <div class="overlay-card">
+          <div style="font-size:45px;margin-bottom:7px">🐍</div>
+          <div class="overlay-title">SNAKE RUSH</div>
+          <div class="overlay-sub">
+            Eat. Grow. Survive.<br>
+            Become the ultimate snake.
+          </div>
+
+          <div style="font-size:11px;color:var(--muted);font-weight:800">SELECT GAME MODE</div>
+          <div class="mode-buttons">
+            <button class="mode active" data-mode="classic">🏆 CLASSIC</button>
+            <button class="mode" data-mode="time">⏱ TIME ATTACK</button>
+            <button class="mode" data-mode="endless">♾ ENDLESS</button>
+          </div>
+
+          <div class="overlay-buttons">
+            <button class="btn primary" id="startBtn">▶ PLAY</button>
+            <button class="btn" id="continueBtn">↻ CONTINUE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pause -->
+      <div class="overlay hidden" id="pauseOverlay">
+        <div class="overlay-card">
+          <div class="overlay-title">PAUSED</div>
+          <div class="overlay-sub">Take a breather.</div>
+          <div class="overlay-buttons">
+            <button class="btn primary" id="resumeBtn">▶ RESUME</button>
+            <button class="btn" id="restartBtn">↻ RESTART</button>
+            <button class="btn" id="mainMenuBtn">⌂ MAIN MENU</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game over -->
+      <div class="overlay hidden" id="gameOverOverlay">
+        <div class="overlay-card">
+          <div style="font-size:45px" id="overEmoji">💀</div>
+          <div class="overlay-title" id="overTitle">GAME OVER</div>
+          <div class="overlay-sub" id="overText">Your run has ended.</div>
+          <div class="info-card">
+            <div class="info-row"><span>Final Score</span><b id="finalScore">0</b></div>
+            <div class="info-row"><span>Foods Eaten</span><b id="finalFood">0</b></div>
+            <div class="info-row"><span>Coins Earned</span><b class="gold" id="finalCoins">0</b></div>
+          </div>
+          <div class="overlay-buttons">
+            <button class="btn primary" id="againBtn">↻ PLAY AGAIN</button>
+            <button class="btn" id="overMenuBtn">⌂ MAIN MENU</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="canvas-footer">
+      <div class="hint">⌨️ WASD / ARROWS &nbsp; • &nbsp; SPACE = PAUSE</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn small" id="pauseBtn">⏸ Pause</button>
+        <button class="btn small" id="restartQuickBtn">↻ Restart</button>
+      </div>
+    </div>
+
+    <div class="mobile-controls">
+      <button class="control up" data-dir="up">▲</button>
+      <button class="control left" data-dir="left">◀</button>
+      <button class="control down" data-dir="down">▼</button>
+      <button class="control right" data-dir="right">▶</button>
+    </div>
+  </main>
+
+  <aside class="side-panel">
+
+    <div class="sidebar-section">
+      <div class="section-title">⚡ POWER-UPS</div>
+      <div class="power-grid">
+        <div class="power" id="shieldPower">
+          <div class="power-icon">🛡️</div>
+          <div class="power-name">SHIELD</div>
+        </div>
+        <div class="power" id="magnetPower">
+          <div class="power-icon">🧲</div>
+          <div class="power-name">MAGNET</div>
+        </div>
+        <div class="power" id="slowPower">
+          <div class="power-icon">⏳</div>
+          <div class="power-name">SLOW</div>
+        </div>
+        <div class="power" id="doublePower">
+          <div class="power-icon">✨</div>
+          <div class="power-name">2X SCORE</div>
+        </div>
+        <div class="power" id="speedPower">
+          <div class="power-icon">⚡</div>
+          <div class="power-name">BOOST</div>
+        </div>
+        <div class="power" id="bonusPower">
+          <div class="power-icon">⭐</div>
+          <div class="power-name">BONUS</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">📈 PROGRESS</div>
+      <div class="info-card">
+        <div class="info-row">
+          <span>Next Level</span>
+          <b id="levelProgressText">0 / 5</b>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="levelProgress"></div>
+        </div>
+        <div class="info-row" style="margin-top:13px">
+          <span>Combo</span>
+          <b class="cyan" id="comboText">x1</b>
+        </div>
+        <div class="info-row">
+          <span>Multiplier</span>
+          <b class="purple" id="multiplierText">x1</b>
+        </div>
+        <div class="info-row">
+          <span>Mode</span>
+          <b id="modeText">Classic</b>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">🎨 YOUR SNAKE</div>
+      <div class="info-card">
+        <div class="info-row">
+          <span>Current Skin</span>
+          <b id="skinName">Neon</b>
+        </div>
+        <div class="skin-preview" id="skinPreview"></div>
+        <button class="btn small" style="width:100%;margin-top:12px" id="skinShopBtn">VIEW SKINS</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">🏅 ACHIEVEMENTS</div>
+      <div class="info-card">
+        <div class="info-row">
+          <span>Unlocked</span>
+          <b id="achievementCount">0 / 8</b>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="achievementProgress"></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:8px" id="achievementHint">
+          Keep playing to unlock achievements!
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+</div>
+
+<!-- SHOP -->
+<div class="modal hidden" id="shopModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🛒 SNAKE SHOP</h2>
+      <button class="btn small" data-close="shopModal">✕</button>
+    </div>
+    <div class="info-card">
+      <div class="info-row"><span>Your coins</span><b class="gold" id="shopCoins">0 🪙</b></div>
+    </div>
+    <div class="shop-grid" id="shopGrid"></div>
+  </div>
+</div>
+
+<!-- MISSIONS -->
+<div class="modal hidden" id="missionsModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🎯 MISSIONS</h2>
+      <button class="btn small" data-close="missionsModal">✕</button>
+    </div>
+    <div id="missionList"></div>
+    <div class="section-title" style="margin-top:20px">🏆 ACHIEVEMENTS</div>
+    <div id="achievementList"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="modal hidden" id="settingsModal">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <h2>⚙️ SETTINGS</h2>
+      <button class="btn small" data-close="settingsModal">✕</button>
+    </div>
+    <div class="settings-grid">
+      <div class="setting-row">
+        <span>Sound effects</span>
+        <button class="btn small" id="settingsSound">ON</button>
+      </div>
+      <div class="setting-row">
+        <span>Difficulty</span>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>Screen shake</span>
+        <button class="btn small" id="shakeToggle">ON</button>
+      </div>
+      <div class="setting-row">
+        <span>Grid</span>
+        <button class="btn small" id="gridToggle">ON</button>
+      </div>
+      <div class="setting-row">
+        <span>Delete saved game</span>
+        <button class="btn small danger" id="resetSave">RESET</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✨ Nice!</div>
+
+<script>
+/* =========================================================
+   SNAKE RUSH ARCADE EDITION
+========================================================= */
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const W = canvas.width;
+const H = canvas.height;
+const CELL = 25;
+const GRID = W / CELL;
+
+const $ = id => document.getElementById(id);
+
+const skins = [
+  {name:"Neon", color:"#51f6ff", price:0, unlock:1, glow:"#51f6ff"},
+  {name:"Gold", color:"#ffd166", price:150, unlock:0, glow:"#ffcc55"},
+  {name:"Ice", color:"#91dfff", price:250, unlock:0, glow:"#5bbcff"},
+  {name:"Lava", color:"#ff654b", price:350, unlock:0, glow:"#ff401d"},
+  {name:"Rainbow", color:"rainbow", price:500, unlock:0, glow:"#ff58bb"},
+  {name:"Ghost", color:"#d5d5ff", price:650, unlock:0, glow:"#bcbcff"},
+  {name:"Toxic", color:"#8dff57", price:800, unlock:0, glow:"#8dff57"},
+  {name:"Galaxy", color:"#b56cff", price:1000, unlock:0, glow:"#a35cff"}
+];
+
+const foodTypes = [
+  {name:"Apple",emoji:"🍎",points:10,color:"#ff4c65"},
+  {name:"Orange",emoji:"🍊",points:15,color:"#ffae45"},
+  {name:"Berry",emoji:"🫐",points:20,color:"#a77bff"},
+  {name:"Golden",emoji:"🌟",points:50,color:"#ffd45b"}
+];
+
+const powerTypes = [
+  {type:"shield",emoji:"🛡️",duration:0},
+  {type:"magnet",emoji:"🧲",duration:9000},
+  {type:"slow",emoji:"⏳",duration:7000},
+  {type:"double",emoji:"✨",duration:10000},
+  {type:"speed",emoji:"⚡",duration:7000},
+  {type:"bonus",emoji:"⭐",duration:0}
+];
+
+const missionTemplates = [
+  {id:"eat10",name:"Hungry Snake",desc:"Eat 10 food in total",target:10,reward:100,stat:"totalFood"},
+  {id:"score500",name:"Score Hunter",desc:"Score 500 points in a run",target:500,reward:120,stat:"bestScore"},
+  {id:"level3",name:"Level Up!",desc:"Reach level 3",target:3,reward:100,stat:"highestLevel"},
+  {id:"play3",name:"Dedicated Player",desc:"Play 3 games",target:3,reward:100,stat:"games"},
+  {id:"coins200",name:"Coin Collector",desc:"Earn 200 coins in total",target:200,reward:150,stat:"totalCoins"},
+  {id:"combo5",name:"Combo Master",desc:"Reach a 5 food combo",target:5,reward:120,stat:"bestCombo"}
+];
+
+const achievementTemplates = [
+  {id:"first",name:"First Bite",desc:"Eat your first food",check:s=>s.totalFood>=1},
+  {id:"ten",name:"Snack Attack",desc:"Eat 10 foods",check:s=>s.totalFood>=10},
+  {id:"fifty",name:"Hungry Hungry",desc:"Eat 50 foods",check:s=>s.totalFood>=50},
+  {id:"score",name:"Score 500",desc:"Get a score of 500",check:s=>s.bestScore>=500},
+  {id:"level5",name:"Level 5",desc:"Reach Level 5",check:s=>s.highestLevel>=5},
+  {id:"level10",name:"Legend",desc:"Reach Level 10",check:s=>s.highestLevel>=10},
+  {id:"combo",name:"Combo King",desc:"Reach a combo of 5",check:s=>s.bestCombo>=5},
+  {id:"games",name:"Veteran",desc:"Play 10 games",check:s=>s.games>=10}
+];
+
+const defaultSave = {
+  coins:0,
+  bestScore:0,
+  highestLevel:1,
+  totalFood:0,
+  totalCoins:0,
+  games:0,
+  bestCombo:0,
+  ownedSkins:["Neon"],
+  selectedSkin:"Neon",
+  unlockedAchievements:[],
+  claimedMissions:[],
+  missionProgress:{},
+  stats:{},
+  settings:{sound:true,difficulty:"normal",shake:true,grid:true}
+};
+
+let save = loadSave();
+
+function loadSave(){
+  try{
+    const raw=localStorage.getItem("snakeRushArcadeSave");
+    if(!raw)return structuredClone(defaultSave);
+    const parsed=JSON.parse(raw);
+    return {...structuredClone(defaultSave),...parsed,
+      settings:{...defaultSave.settings,...parsed.settings},
+      missionProgress:{...defaultSave.missionProgress,...parsed.missionProgress}
+    };
+  }catch(e){return structuredClone(defaultSave)}
+}
+
+function saveGame(){
+  localStorage.setItem("snakeRushArcadeSave",JSON.stringify(save));
+}
+
+let state="menu";
+let mode="classic";
+let score=0;
+let level=1;
+let foodsThisLevel=0;
+let foodEaten=0;
+let coinsRun=0;
+let combo=0;
+let comboTimer=0;
+let shield=false;
+let effects={magnet:0,slow:0,double:0,speed:0};
+let snake=[];
+let direction={x:1,y:0};
+let nextDirection={x:1,y:0};
+let food=null;
+let powerup=null;
+let obstacles=[];
+let particles=[];
+let bonus=null;
+let bossHP=0;
+let bossMode=false;
+let timeLeft=90;
+let tickTimer=0;
+let lastFrame=0;
+let shake=0;
+let flash=0;
+let skin=skins[0];
+let tickRate=180;
+let overlayShown=false;
+let continueAvailable=false;
+let runStats={};
+let soundEnabled=save.settings.sound;
+let selectedMode="classic";
+
+let missionDaily=missionTemplates;
+let currentMissionProgress={};
+
+function randomInt(n){return Math.floor(Math.random()*n)}
+function randCell(){return {x:randomInt(GRID),y:randomInt(GRID)}}
+function same(a,b){return a&&b&&a.x===b.x&&a.y===b.y}
+function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
+function cellCenter(p){return {x:p.x*CELL+CELL/2,y:p.y*CELL+CELL/2}}
+
+function getSkin(){
+  return skins.find(s=>s.name===save.selectedSkin)||skins[0];
+}
+
+function loadSkin(){
+  skin=getSkin();
+}
+
+function randomFree(){
+  let p;
+  let attempts=0;
+  do{
+    p=randCell();
+    attempts++;
+    if(attempts>2000)return {x:1,y:1};
+  }while(!isFree(p));
+  return p;
+}
+
+function isFree(p){
+  if(snake.some(s=>same(s,p)))return false;
+  if(obstacles.some(o=>same(o,p)))return false;
+  if(food&&same(food,p))return false;
+  if(powerup&&same(powerup,p))return false;
+  if(bonus&&same(bonus,p))return false;
+  return true;
+}
+
+function spawnFood(){
+  food=randomFree();
+  const roll=Math.random();
+  if(roll<0.08)food.type=3;
+  else if(roll<0.27)food.type=2;
+  else if(roll<0.55)food.type=1;
+  else food.type=0;
+}
+
+function spawnPower(){
+  if(powerup)return;
+  powerup=randomFree();
+  powerup.type=powerTypes[randomInt(5)].type;
+  powerup.ttl=8000;
+}
+
+function spawnBonus(){
+  if(bonus)return;
+  bonus=randomFree();
+  bonus.ttl=6000;
+}
+
+function addObstacle(){
+  const p=randomFree();
+  obstacles.push(p);
+}
+
+function setupObstacles(){
+  obstacles=[];
+  if(mode==="endless"&&level>2){
+    const count=Math.min(3+level,18);
+    for(let i=0;i<count;i++)addObstacle();
+    return;
+  }
+  if(level<3)return;
+  const count=Math.min((level-2)*2,16);
+  for(let i=0;i<count;i++)addObstacle();
+}
+
+function initGame(selected){
+  mode=selected||selectedMode;
+  state="playing";
+  score=0;
+  level=1;
+  foodsThisLevel=0;
+  foodEaten=0;
+  coinsRun=0;
+  combo=0;
+  comboTimer=0;
+  shield=false;
+  effects={magnet:0,slow:0,double:0,speed:0};
+  snake=[
+    {x:9,y:12},
+    {x:8,y:12},
+    {x:7,y:12},
+    {x:6,y:12}
+  ];
+  direction={x:1,y:0};
+  nextDirection={x:1,y:0};
+  food=null;
+  powerup=null;
+  obstacles=[];
+  bonus=null;
+  bossHP=0;
+  bossMode=false;
+  timeLeft=90;
+  particles=[];
+  runStats={};
+  tickTimer=0;
+  setupObstacles();
+  spawnFood();
+  updateUI();
+  $("menuOverlay").classList.add("hidden");
+  $("pauseOverlay").classList.add("hidden");
+  $("gameOverOverlay").classList.add("hidden");
+  save.games++;
+  saveGame();
+  sound("start");
+}
+
+function startGame(){
+  initGame(selectedMode);
+}
+
+function pauseGame(){
+  if(state!=="playing")return;
+  state="paused";
+  $("pauseOverlay").classList.remove("hidden");
+}
+
+function resumeGame(){
+  if(state!=="paused")return;
+  state="playing";
+  $("pauseOverlay").classList.add("hidden");
+}
+
+function backToMenu(){
+  state="menu";
+  $("pauseOverlay").classList.add("hidden");
+  $("gameOverOverlay").classList.add("hidden");
+  $("menuOverlay").classList.remove("hidden");
+}
+
+function gameOver(reason="crash"){
+  if(state!=="playing")return;
+  state="over";
+  sound("over");
+  flash=1;
+  shake=16;
+
+  save.bestScore=Math.max(save.bestScore,score);
+  save.highestLevel=Math.max(save.highestLevel,level);
+  save.totalFood+=foodEaten;
+  save.totalCoins+=coinsRun;
+  save.coins+=coinsRun;
+  save.bestCombo=Math.max(save.bestCombo,combo);
+  save.stats.lastScore=score;
+
+  updateMissionStats();
+  checkAchievements();
+  saveGame();
+
+  $("finalScore").textContent=score;
+  $("finalFood").textContent=foodEaten;
+  $("finalCoins").textContent=coinsRun;
+  $("overTitle").textContent=reason==="time"?"TIME'S UP!":"GAME OVER";
+  $("overEmoji").textContent=reason==="time"?"⏰":"💀";
+  $("overText").textContent=reason==="time"?"Time is up! Great run.":"Your run has ended. Try again!";
+  $("gameOverOverlay").classList.remove("hidden");
+  updateUI();
+}
+
+function nextLevel(){
+  level++;
+  foodsThisLevel=0;
+  save.highestLevel=Math.max(save.highestLevel,level);
+  coinsRun+=25;
+  score+=50;
+  sound("level");
+  toast("🎉 LEVEL "+level+"! +25 coins");
+
+  if(level===5||level===10){
+    bossMode=true;
+    bossHP=3;
+    toast("👑 BOSS LEVEL! Hit the golden food 3 times!");
+  }else{
+    bossMode=false;
+    bossHP=0;
+  }
+
+  setupObstacles();
+  spawnFood();
+  updateUI();
+}
+
+function eatFood(){
+  if(!food)return;
+  const f=foodTypes[food.type||0];
+  const points=f.points*(effects.double>0?2:1);
+  score+=points;
+  coinsRun+=Math.max(1,Math.ceil(points/10));
+  foodEaten++;
+  combo++;
+  comboTimer=3500;
+  save.bestCombo=Math.max(save.bestCombo,combo);
+
+  sound("eat");
+  particlesAt(snake[0],f.color,10);
+
+  foodsThisLevel++;
+
+  if(bossMode){
+    bossHP--;
+    score+=100;
+    coinsRun+=15;
+    toast("👑 BOSS HIT! "+bossHP+" HP LEFT");
+    if(bossHP<=0){
+      bossMode=false;
+      score+=250;
+      coinsRun+=75;
+      toast("🏆 BOSS DEFEATED! +75 coins");
+      nextLevel();
+    }else{
+      spawnFood();
+    }
+  }else{
+    spawnFood();
+    if(mode!=="endless"&&mode!=="time"&&foodsThisLevel>=5){
+      nextLevel();
+    }else if(mode==="endless"&&foodsThisLevel>=5){
+      nextLevel();
+    }else if(mode==="time"&&foodsThisLevel>=5){
+      nextLevel();
+    }
+  }
+
+  if(Math.random()<0.16&&!powerup)spawnPower();
+  if(Math.random()<0.10&&!bonus)spawnBonus();
+
+  updateMissionStats();
+  checkAchievements();
+  updateUI();
+}
+
+function eatBonus(){
+  if(!bonus)return;
+  score+=100;
+  coinsRun+=20;
+  particlesAt(bonus,"#ffd45b",18);
+  bonus=null;
+  sound("bonus");
+  toast("⭐ BONUS! +100 points");
+}
+
+function eatPower(){
+  if(!powerup)return;
+  const type=powerup.type;
+  particlesAt(powerup,"#b56cff",14);
+  powerup=null;
+  sound("power");
+
+  if(type==="shield"){
+    shield=true;
+    toast("🛡️ SHIELD ACTIVATED");
+  }else if(type==="magnet"){
+    effects.magnet=9000;
+    toast("🧲 FOOD MAGNET!");
+  }else if(type==="slow"){
+    effects.slow=7000;
+    toast("⏳ SLOW MOTION!");
+  }else if(type==="double"){
+    effects.double=10000;
+    toast("✨ DOUBLE POINTS!");
+  }else if(type==="speed"){
+    effects.speed=7000;
+    toast("⚡ SPEED BOOST!");
+  }else if(type==="bonus"){
+    score+=100;
+    coinsRun+=20;
+    toast("⭐ BONUS +100!");
+  }
+}
+
+function hitObstacle(){
+  if(shield){
+    shield=false;
+    snake=[
+      {x:9,y:12},
+      {x:8,y:12},
+      {x:7,y:12}
+    ];
+    direction={x:1,y:0};
+    nextDirection={x:1,y:0};
+    obstacles=[];
+    shake=9;
+    sound("shield");
+    toast("🛡️ SHIELD SAVED YOU!");
+    return false;
+  }
+  return true;
+}
+
+function step(){
+  if(state!=="playing")return;
+
+  direction=nextDirection;
+
+  const head={x:snake[0].x+direction.x,y:snake[0].y+direction.y};
+
+  if(head.x<0||head.y<0||head.x>=GRID||head.y>=GRID){
+    if(hitObstacle())return gameOver();
+    return;
+  }
+
+  const willEat=same(head,food);
+  const bodyToCheck=willEat?snake:snake.slice(0,-1);
+
+  if(bodyToCheck.some(s=>same(s,head))){
+    if(hitObstacle())return gameOver();
+    return;
+  }
+
+  if(obstacles.some(o=>same(o,head))){
+    if(hitObstacle())return gameOver();
+    return;
+  }
+
+  snake.unshift(head);
+
+  if(willEat){
+    eatFood();
+  }else{
+    snake.pop();
+  }
+
+  if(bonus&&same(head,bonus))eatBonus();
+  if(powerup&&same(head,powerup))eatPower();
+
+  if(effects.magnet>0){
+    const dx=food.x-head.x,dy=food.y-head.y;
+    if(Math.abs(dx)+Math.abs(dy)<5){
+      food.x+=Math.sign(-dx);
+      food.y+=Math.sign(-dy);
+      food.x=clamp(food.x,0,GRID-1);
+      food.y=clamp(food.y,0,GRID-1);
+    }
+  }
+}
+
+function updateTimers(dt){
+  if(comboTimer>0){
+    comboTimer-=dt;
+    if(comboTimer<=0)combo=0;
+  }
+
+  for(const k in effects){
+    if(effects[k]>0)effects[k]-=dt;
+  }
+
+  if(powerup){
+    powerup.ttl-=dt;
+    if(powerup.ttl<=0)powerup=null;
+  }
+  if(bonus){
+    bonus.ttl-=dt;
+    if(bonus.ttl<=0)bonus=null;
+  }
+
+  if(mode==="time"&&state==="playing"){
+    timeLeft-=dt/1000;
+    if(timeLeft<=0){
+      timeLeft=0;
+      gameOver("time");
+    }
+  }
+}
+
+function getTickRate(){
+  let base=180;
+  if(save.settings.difficulty==="easy")base=210;
+  if(save.settings.difficulty==="hard")base=145;
+
+  base-=Math.min(level*7,65);
+  base-=Math.min(snake.length*1.5,35);
+
+  if(effects.slow>0)base+=70;
+  if(effects.speed>0)base-=35;
+
+  return clamp(base,65,250);
+}
+
+/* =========================================================
+   DRAW
+========================================================= */
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  drawBackground();
+
+  if(state==="menu"){
+    drawDemo();
+    return;
+  }
+
+  drawObstacles();
+  drawFood();
+  drawBonus();
+  drawPowerup();
+  drawSnake();
+  drawParticles();
+  drawBossIndicator();
+  drawEffects();
+
+  if(state==="paused")drawDim();
+}
+
+function drawBackground(){
+  ctx.fillStyle="#080d19";
+  ctx.fillRect(0,0,W,H);
+
+  if(save.settings.grid){
+    ctx.strokeStyle="#ffffff06";
+    ctx.lineWidth=1;
+    for(let i=0;i<=GRID;i++){
+      ctx.beginPath();
+      ctx.moveTo(i*CELL,0);
+      ctx.lineTo(i*CELL,H);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(0,i*CELL);
+      ctx.lineTo(W,i*CELL);
+      ctx.stroke();
+    }
+  }
+
+  // Border
+  ctx.strokeStyle=skin.glow+"44";
+  ctx.lineWidth=3;
+  ctx.strokeRect(2,2,W-4,H-4);
+}
+
+function drawDemo(){
+  const demo=[
+    {x:12,y:12},{x:11,y:12},{x:10,y:12},
+    {x:9,y:12},{x:8,y:12},{x:7,y:12}
+  ];
+  drawSnakeBody(demo);
+  drawFoodAt({x:17,y:12,type:0});
+}
+
+function drawSnake(){
+  drawSnakeBody(snake);
+}
+
+function drawSnakeBody(body){
+  for(let i=body.length-1;i>=0;i--){
+    const p=body[i];
+    const x=p.x*CELL;
+    const y=p.y*CELL;
+    const inset=i===0?2:3;
+
+    let color=skin.color;
+    if(skin.color==="rainbow"){
+      color=`hsl(${(Date.now()/12+i*25)%360},100%,60%)`;
+    }
+
+    ctx.save();
+    ctx.shadowBlur=i===0?20:9;
+    ctx.shadowColor=skin.glow;
+    ctx.fillStyle=color;
+
+    roundRect(ctx,x+inset,y+inset,CELL-inset*2,CELL-inset*2,7);
+    ctx.fill();
+
+    if(i===0){
+      ctx.shadowBlur=0;
+      drawEyes(p);
+    }
+    ctx.restore();
+  }
+}
+
+function drawEyes(head){
+  const cx=head.x*CELL+CELL/2;
+  const cy=head.y*CELL+CELL/2;
+
+  const perp={x:-direction.y,y:direction.x};
+  const forward={x:direction.x,y:direction.y};
+
+  const e1={x:cx+forward.x*5+perp.x*5,y:cy+forward.y*5+perp.y*5};
+  const e2={x:cx+forward.x*5-perp.x*5,y:cy+forward.y*5-perp.y*5};
+
+  ctx.fillStyle="#07111a";
+  ctx.beginPath();
+  ctx.arc(e1.x,e1.y,2.5,0,Math.PI*2);
+  ctx.arc(e2.x,e2.y,2.5,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawFood(){
+  if(!food)return;
+  drawFoodAt(food);
+}
+
+function drawFoodAt(p){
+  const type=foodTypes[p.type||0];
+  const c=cellCenter(p);
+  ctx.save();
+  ctx.shadowBlur=20;
+  ctx.shadowColor=type.color;
+  ctx.font="20px sans-serif";
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.fillText(type.emoji,c.x,c.y);
+  ctx.restore();
+}
+
+function drawBonus(){
+  if(!bonus)return;
+  const c=cellCenter(bonus);
+  ctx.save();
+  ctx.shadowBlur=25;
+  ctx.shadowColor="#ffd45b";
+  ctx.font="22px sans-serif";
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.fillText("⭐",c.x,c.y);
+  ctx.restore();
+}
+
+function drawPowerup(){
+  if(!powerup)return;
+  const c=cellCenter(powerup);
+  const data=powerTypes.find(p=>p.type===powerup.type);
+  ctx.save();
+  ctx.shadowBlur=20;
+  ctx.shadowColor="#b56cff";
+  ctx.font="22px sans-serif";
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.fillText(data.emoji,c.x,c.y);
+  ctx.restore();
+}
+
+function drawObstacles(){
+  for(const o of obstacles){
+    const x=o.x*CELL,y=o.y*CELL;
+    ctx.save();
+    ctx.shadowBlur=8;
+    ctx.shadowColor="#ff547a";
+    ctx.fillStyle="#321b31";
+    roundRect(ctx,x+3,y+3,CELL-6,CELL-6,5);
+    ctx.fill();
+    ctx.strokeStyle="#ff547a99";
+    ctx.strokeRect(x+5,y+5,CELL-10,CELL-10);
+    ctx.restore();
+  }
+}
+
+function drawBossIndicator(){
+  if(!bossMode)return;
+  ctx.save();
+  ctx.fillStyle="#ffd45b";
+  ctx.font="bold 16px Orbitron";
+  ctx.textAlign="center";
+  ctx.shadowBlur=15;
+  ctx.shadowColor="#ffd45b";
+  ctx.fillText("👑 BOSS "+bossHP+" HP",W/2,30);
+  ctx.restore();
+}
+
+function drawEffects(){
+  if(shield){
+    const h=snake[0];
+    const c=cellCenter(h);
+    ctx.beginPath();
+    ctx.arc(c.x,c.y,19,0,Math.PI*2);
+    ctx.strokeStyle="#51f6ff";
+    ctx.lineWidth=2;
+    ctx.shadowBlur=15;
+    ctx.shadowColor="#51f6ff";
+    ctx.stroke();
+  }
+}
+
+function drawDim(){
+  ctx.fillStyle="#00000045";
+  ctx.fillRect(0,0,W,H);
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,r);
+}
+
+function particlesAt(p,color,count){
+  const c=cellCenter(p);
+  for(let i=0;i<count;i++){
+    particles.push({
+      x:c.x,y:c.y,
+      vx:(Math.random()-.5)*5,
+      vy:(Math.random()-.5)*5,
+      life:25+randomInt(15),
+      max:40,
+      color
+    });
+  }
+}
+
+function drawParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.life--;
+    ctx.globalAlpha=Math.max(0,p.life/p.max);
+    ctx.fillStyle=p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,3,0,Math.PI*2);
+    ctx.fill();
+    if(p.life<=0)particles.splice(i,1);
+  }
+  ctx.globalAlpha=1;
+}
+
+/* =========================================================
+   UI
+========================================================= */
+
+function updateUI(){
+  $("score").textContent=score;
+  $("level").textContent=level;
+  $("coins").textContent=save.coins+coinsRun;
+  $("best").textContent=Math.max(save.bestScore,score);
+
+  $("levelProgressText").textContent=foodsThisLevel+" / 5";
+  $("levelProgress").style.width=(foodsThisLevel/5*100)+"%";
+  $("comboText").textContent="x"+Math.max(1,combo);
+  $("multiplierText").textContent=effects.double>0?"x2":"x1";
+  $("modeText").textContent=mode==="classic"?"Classic":mode==="time"?"Time Attack":"Endless";
+
+  $("skinName").textContent=skin.name;
+  $("achievementCount").textContent=save.unlockedAchievements.length+" / "+achievementTemplates.length;
+  $("achievementProgress").style.width=(save.unlockedAchievements.length/achievementTemplates.length*100)+"%";
+
+  const next=achievementTemplates.find(a=>!save.unlockedAchievements.includes(a.id));
+  $("achievementHint").textContent=next?next.name+": "+next.desc:"All achievements unlocked!";
+
+  $("shieldPower").classList.toggle("active",shield);
+  $("magnetPower").classList.toggle("active",effects.magnet>0);
+  $("slowPower").classList.toggle("active",effects.slow>0);
+  $("doublePower").classList.toggle("active",effects.double>0);
+  $("speedPower").classList.toggle("active",effects.speed>0);
+  $("bonusPower").classList.toggle("active",bonus!==null);
+
+  renderSkinPreview();
+}
+
+function renderSkinPreview(){
+  const el=$("skinPreview");
+  el.innerHTML="";
+  skins.forEach(s=>{
+    if(!save.ownedSkins.includes(s.name))return;
+    const d=document.createElement("div");
+    d.className="skin-dot"+(save.selectedSkin===s.name?" selected":"");
+    d.title=s.name;
+    d.style.background=s.color==="rainbow"?"linear-gradient(45deg,red,orange,yellow,green,blue,purple)":s.color;
+    d.onclick=()=>{
+      save.selectedSkin=s.name;
+      loadSkin();
+      saveGame();
+      updateUI();
+      sound("click");
+    };
+    el.appendChild(d);
+  });
+}
+
+function toast(message){
+  const el=$("toast");
+  el.textContent=message;
+  el.classList.add("show");
+  clearTimeout(toast._timer);
+  toast._timer=setTimeout(()=>el.classList.remove("show"),2200);
+}
+
+/* =========================================================
+   MISSIONS + ACHIEVEMENTS
+========================================================= */
+
+function updateMissionStats(){
+  save.missionProgress.eat10=save.totalFood+foodEaten;
+  save.missionProgress.score500=Math.max(save.missionProgress.score500||0,score);
+  save.missionProgress.level3=Math.max(save.missionProgress.level3||0,level);
+  save.missionProgress.play3=save.games;
+  save.missionProgress.coins200=save.totalCoins+coinsRun;
+  save.missionProgress.combo5=Math.max(save.missionProgress.combo5||0,combo);
+  saveGame();
+}
+
+function checkAchievements(){
+  achievementTemplates.forEach(a=>{
+    if(!save.unlockedAchievements.includes(a.id)&&a.check(save)){
+      save.unlockedAchievements.push(a.id);
+      toast("🏆 ACHIEVEMENT: "+a.name);
+      coinsRun+=50;
+      sound("achievement");
+    }
+  });
+}
+
+function renderMissions(){
+  const el=$("missionList");
+  el.innerHTML="";
+
+  missionTemplates.forEach(m=>{
+    const progress=save.missionProgress[m.id]||0;
+    const completed=progress>=m.target;
+    const claimed=save.claimedMissions.includes(m.id);
+
+    const div=document.createElement("div");
+    div.className="mission"+(completed?" done":"");
+    div.innerHTML=`
+      <div class="mission-title">${completed?"✅ ":"🎯 "}${m.name}</div>
+      <div class="mission-desc">${m.desc}</div>
+      <div class="mission-bottom">
+        <span>${Math.min(progress,m.target)} / ${m.target}</span>
+        <span class="gold">🪙 ${m.reward}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,progress/m.target*100)}%"></div></div>
+      <button class="btn small ${completed&&!claimed?"primary":""}" style="width:100%;margin-top:9px"
+        ${!completed||claimed?"disabled":""}>
+        ${claimed?"CLAIMED":completed?"CLAIM REWARD":"IN PROGRESS"}
+      </button>`;
+    const button=div.querySelector("button");
+    button.onclick=()=>{
+      if(completed&&!claimed){
+        save.claimedMissions.push(m.id);
+        save.coins+=m.reward;
+        save.totalCoins+=m.reward;
+        saveGame();
+        toast("🎉 Mission reward claimed!");
+        renderMissions();
+        updateUI();
+      }
+    };
+    el.appendChild(div);
+  });
+
+  const ae=$("achievementList");
+  ae.innerHTML="";
+  achievementTemplates.forEach(a=>{
+    const unlocked=save.unlockedAchievements.includes(a.id);
+    const div=document.createElement("div");
+    div.className="mission"+(unlocked?" done":"");
+    div.innerHTML=`
+      <div class="mission-title">${unlocked?"🏆":"🔒"} ${a.name}</div>
+      <div class="mission-desc">${a.desc}</div>`;
+    ae.appendChild(div);
+  });
+}
+
+/* =========================================================
+   SHOP
+========================================================= */
+
+function renderShop(){
+  $("shopCoins").textContent=(save.coins+coinsRun)+" 🪙";
+  const grid=$("shopGrid");
+  grid.innerHTML="";
+
+  skins.forEach(s=>{
+    const owned=save.ownedSkins.includes(s.name);
+    const selected=save.selectedSkin===s.name;
+
+    const div=document.createElement("div");
+    div.className="shop-item";
+
+    const preview=s.color==="rainbow"
+      ?"linear-gradient(45deg,red,orange,yellow,green,blue,purple)"
+      :s.color;
+
+    div.innerHTML=`
+      <div class="shop-preview">
+        <div style="width:48px;height:48px;border-radius:14px;background:${preview};box-shadow:0 0 20px ${s.glow}66"></div>
+      </div>
+      <div class="shop-name">${s.name}</div>
+      <div class="shop-price">${owned?"OWNED":"🪙 "+s.price}</div>
+      <button class="btn small ${selected?"primary":""}">
+        ${selected?"EQUIPPED":owned?"EQUIP":"BUY"}
+      </button>`;
+
+    const button=div.querySelector("button");
+    button.onclick=()=>{
+      if(owned){
+        save.selectedSkin=s.name;
+        loadSkin();
+        saveGame();
+        updateUI();
+        renderShop();
+        sound("click");
+      }else if(save.coins+coinsRun>=s.price){
+        save.coins+=coinsRun;
+        coinsRun=0;
+        save.coins-=s.price;
+        save.ownedSkins.push(s.name);
+        save.selectedSkin=s.name;
+        loadSkin();
+        saveGame();
+        updateUI();
+        renderShop();
+        toast("🎨 "+s.name+" unlocked!");
+        sound("bonus");
+      }else{
+        toast("Not enough coins! 🪙");
+      }
+    };
+    grid.appendChild(div);
+  });
+}
+
+/* =========================================================
+   SOUND
+========================================================= */
+
+let audioContext=null;
+
+function sound(type){
+  if(!save.settings.sound)return;
+  try{
+    audioContext=audioContext||new(window.AudioContext||window.webkitAudioContext)();
+    const osc=audioContext.createOscillator();
+    const gain=audioContext.createGain();
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+
+    const now=audioContext.currentTime;
+    let freq=440,duration=.08,wave="sine";
+
+    if(type==="eat"){freq=550;duration=.08}
+    if(type==="bonus"){freq=850;duration=.22}
+    if(type==="power"){freq=700;duration=.16}
+    if(type==="level"){freq=900;duration=.3}
+    if(type==="start"){freq=450;duration=.2}
+    if(type==="over"){freq=170;duration=.3;wave="sawtooth"}
+    if(type==="shield"){freq=600;duration=.2}
+    if(type==="achievement"){freq=1000;duration=.3}
+    if(type==="click"){freq=350;duration=.04}
+
+    osc.type=wave;
+    osc.frequency.setValueAtTime(freq,now);
+    osc.frequency.exponentialRampToValueAtTime(freq*1.35,now+duration);
+    gain.gain.setValueAtTime(.06,now);
+    gain.gain.exponentialRampToValueAtTime(.001,now+duration);
+    osc.start(now);
+    osc.stop(now+duration);
+  }catch(e){}
+}
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+function setDir(d){
+  if(state!=="playing")return;
+
+  if(d==="up"&&direction.y!==1)nextDirection={x:0,y:-1};
+  if(d==="down"&&direction.y!==-1)nextDirection={x:0,y:1};
+  if(d==="left"&&direction.x!==1)nextDirection={x:-1,y:0};
+  if(d==="right"&&direction.x!==-1)nextDirection={x:1,y:0};
+}
+
+document.addEventListener("keydown",e=>{
+  const k=e.key.toLowerCase();
+
+  if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k))e.preventDefault();
+
+  if(k==="arrowup"||k==="w")setDir("up");
+  if(k==="arrowdown"||k==="s")setDir("down");
+  if(k==="arrowleft"||k==="a")setDir("left");
+  if(k==="arrowright"||k==="d")setDir("right");
+
+  if(k===" "){
+    if(state==="playing")pauseGame();
+    else if(state==="paused")resumeGame();
+  }
+
+  if(k==="escape"){
+    if(state==="playing")pauseGame();
+    else if(state==="paused")resumeGame();
+  }
+
+  if(k==="enter"&&state==="menu")startGame();
+});
+
+document.querySelectorAll(".control").forEach(b=>{
+  b.addEventListener("pointerdown",e=>{
+    e.preventDefault();
+    setDir(b.dataset.dir);
+  });
+});
+
+let swipeStart=null;
+
+canvas.addEventListener("touchstart",e=>{
+  if(e.touches.length===1){
+    swipeStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  }
+},{passive:true});
+
+canvas.addEventListener("touchend",e=>{
+  if(!swipeStart)return;
+  const t=e.changedTouches[0];
+  const dx=t.clientX-swipeStart.x;
+  const dy=t.clientY-swipeStart.y;
+  if(Math.abs(dx)>Math.abs(dy)){
+    setDir(dx>0?"right":"left");
+  }else{
+    setDir(dy>0?"down":"up");
+  }
+  swipeStart=null;
+},{passive:true});
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+$("startBtn").onclick=startGame;
+$("continueBtn").onclick=startGame;
+$("resumeBtn").onclick=resumeGame;
+$("restartBtn").onclick=startGame;
+$("againBtn").onclick=startGame;
+$("mainMenuBtn").onclick=backToMenu;
+$("overMenuBtn").onclick=backToMenu;
+$("pauseBtn").onclick=pauseGame;
+$("restartQuickBtn").onclick=startGame;
+
+$("shopBtn").onclick=()=>{
+  renderShop();
+  $("shopModal").classList.remove("hidden");
+};
+$("skinShopBtn").onclick=()=>{
+  renderShop();
+  $("shopModal").classList.remove("hidden");
+};
+$("missionsBtn").onclick=()=>{
+  renderMissions();
+  $("missionsModal").classList.remove("hidden");
+};
+$("settingsBtn").onclick=$("settingsModal").classList.remove.bind($("settingsModal"));
+
+document.querySelectorAll("[data-close]").forEach(b=>{
+  b.onclick=()=>$(b.dataset.close).classList.add("hidden");
+});
+
+document.querySelectorAll(".mode").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll(".mode").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    selectedMode=b.dataset.mode;
+    sound("click");
+  };
+});
+
+$("soundBtn").onclick=()=>{
+  save.settings.sound=!save.settings.sound;
+  saveGame();
+  updateSoundButton();
+};
+$("settingsSound").onclick=$("soundBtn").onclick;
+
+function updateSoundButton(){
+  $("soundBtn").textContent=save.settings.sound?"🔊":"🔇";
+  $("settingsSound").textContent=save.settings.sound?"ON":"OFF";
+}
+
+$("difficulty").value=save.settings.difficulty;
+$("difficulty").onchange=()=>{
+  save.settings.difficulty=$("difficulty").value;
+  saveGame();
+};
+
+$("shakeToggle").onclick=()=>{
+  save.settings.shake=!save.settings.shake;
+  $("shakeToggle").textContent=save.settings.shake?"ON":"OFF";
+  saveGame();
+};
+$("gridToggle").onclick=()=>{
+  save.settings.grid=!save.settings.grid;
+  $("gridToggle").textContent=save.settings.grid?"ON":"OFF";
+  saveGame();
+};
+
+$("shakeToggle").textContent=save.settings.shake?"ON":"OFF";
+$("gridToggle").textContent=save.settings.grid?"ON":"OFF";
+
+$("resetSave").onclick=()=>{
+  if(confirm("Reset ALL progress, coins, skins, achievements and scores?")){
+    localStorage.removeItem("snakeRushArcadeSave");
+    save=structuredClone(defaultSave);
+    loadSkin();
+    updateUI();
+    renderShop();
+    renderMissions();
+    toast("Save reset!");
+  }
+};
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+function loop(timestamp){
+  const dt=Math.min(40,timestamp-lastFrame||16);
+  lastFrame=timestamp;
+
+  if(state==="playing"){
+    updateTimers(dt);
+    tickRate=getTickRate();
+    tickTimer+=dt;
+
+    while(tickTimer>=tickRate){
+      tickTimer-=tickRate;
+      step();
+    }
+  }
+
+  updateUI();
+  draw();
+
+  requestAnimationFrame(loop);
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+
+loadSkin();
+updateSoundButton();
+updateUI();
+renderShop();
+renderMissions();
+
+$("menuOverlay").classList.remove("hidden");
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
